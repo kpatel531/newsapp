@@ -82,7 +82,7 @@ export class News extends Component {
           <button
             disabled={this.state.page <= 1}
             type="button"
-            class="btn btn-dark previous"
+            className="btn btn-dark previous"
             onClick={this.handlePrevClick}
           >Previous
           </button>
@@ -92,7 +92,7 @@ export class News extends Component {
               Math.ceil(this.state.totalResults / this.props.pageSize)
             }
             type="button"
-            class="btn btn-dark next"
+            className="btn btn-dark next"
             onClick={this.handleNextClick}>Next
           </button>
         </div>
