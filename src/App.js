@@ -7,7 +7,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 const App = () => {
   const pageSize = 20;
-  const country = "in";
+  const country = "us";
   const apiKey = process.env.REACT_APP_NEWS_API;
   return (
     <div>
