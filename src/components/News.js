@@ -31,6 +31,7 @@ export class News extends Component {
   }
 
   async updateNews() {
+    const fetch = require("node-fetch");
     const url = `https://newsapi.org/v2/top-headlines?category=${this.props.category}&country=${this.props.country}&apiKey=${this.props.apiKey}&page=${this.state.page}&pageSize=${this.props.pageSize}`;
     this.setState({ loading: true });
     let data = await fetch(url);
