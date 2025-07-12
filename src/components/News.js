@@ -3,6 +3,9 @@ import NewsItem from "./NewsItem";
 import Spinner from "./Spinner";
 import PropTypes from "prop-types";
 import axios from "axios";
+const cors = require("cors");
+
+app.use(cors());
 
 const News = ({
   country = "us",
