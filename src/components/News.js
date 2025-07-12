@@ -1,120 +1,107 @@
-import React, { Component } from "react";
+import React, { useState, useEffect } from "react";
 import NewsItem from "./NewsItem";
 import Spinner from "./Spinner";
 import PropTypes from "prop-types";
 import axios from "axios";
 
-export class News extends Component {
-  static defaultProps = {
-    country: "us",
-    pageSize: 18,
-    category: "general",
-  };
+const News = ({
+  country = "us",
+  pageSize = 18,
+  category = "general",
+  apiKey,
+}) => {
+  const [articles, setArticles] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [page, setPage] = useState(1);
+  const [totalResults, setTotalResults] = useState(0);
 
-  static propTypes = {
-    country: PropTypes.string,
-    pageSize: PropTypes.number,
-    category: PropTypes.string,
-    apiKey: PropTypes.string.isRequired,
-  };
+  const capitalizeFirstLetter = (string) =>
+    string.charAt(0).toUpperCase() + string.slice(1);
 
-  capitalizeFirstLetter = (string) => {
-    return string.charAt(0).toUpperCase() + string.slice(1);
-  };
-
-  constructor(props) {
-    super(props);
-    this.state = {
-      articles: [],
-      loading: false,
-      page: 1,
-    };
-    document.title = `${this.capitalizeFirstLetter(this.props.category)} - NewsMonkey`;
-  }
-
-  updateNews = async () => {
-    const { category, country, pageSize, apiKey } = this.props;
-    const { page } = this.state;
+  const updateNews = async () => {
     const url = `https://newsapi.org/v2/top-headlines?category=${category}&country=${country}&apiKey=${apiKey}&page=${page}&pageSize=${pageSize}`;
 
     try {
-      this.setState({ loading: true });
-      const response = await axios.get(url);
-      this.setState({
-        articles: response.data.articles,
-        totalResults: response.data.totalResults,
-        loading: false,
+      setLoading(true);
+      const response = await axios.get(url, {
+        headers: { "X-Api-Key": apiKey },
       });
+      setArticles(response.data.articles);
+      setTotalResults(response.data.totalResults);
+      setLoading(false);
     } catch (error) {
       console.error("Error fetching news:", error);
-      this.setState({ loading: false });
+      setLoading(false);
     }
   };
 
-  componentDidMount() {
-    this.updateNews();
-  }
+  useEffect(() => {
+    document.title = `${capitalizeFirstLetter(category)} - NewsByReact`;
+    updateNews();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page, category]);
 
-  handlePrevClick = async () => {
-    await this.setState({ page: this.state.page - 1 });
-    this.updateNews();
+  const handlePrevClick = () => {
+    if (page > 1) setPage(page - 1);
   };
 
-  handleNextClick = async () => {
-    if (this.state.page + 1 <= Math.ceil(this.state.totalResults / this.props.pageSize)) {
-      await this.setState({ page: this.state.page + 1 });
-      this.updateNews();
+  const handleNextClick = () => {
+    if (page + 1 <= Math.ceil(totalResults / pageSize)) {
+      setPage(page + 1);
     }
   };
 
-  render() {
-    return (
-      <div className="container my-3">
-        <h1 className="text-center">
-          NewsMonkey - Top Headlines on {this.capitalizeFirstLetter(this.props.category)}
-        </h1>
-        {this.state.loading && <Spinner />}
-        <div className="row">
-          {!this.state.loading &&
-            this.state.articles.map((element, index) => (
-              <div className="col-md-4" key={index}>
-                <NewsItem
-                  title={element.title ? element.title.slice(0, 45) : ""}
-                  description={element.description ? element.description.slice(0, 88) : ""}
-                  imageUrl={
-                    element.urlToImage
-                      ? element.urlToImage
-                      : "https://www.hindustantimes.com/static-content/1y/ht/ht-logo.png"
-                  }
-                  newsUrl={element.url}
-                />
-              </div>
-            ))}
-        </div>
-        <div className="container d-flex justify-content-between">
-          <button
-            disabled={this.state.page <= 1}
-            type="button"
-            className="btn btn-dark previous"
-            onClick={this.handlePrevClick}
-          >
-            Previous
-          </button>
-          <button
-            disabled={
-              this.state.page + 1 >
-              Math.ceil(this.state.totalResults / this.props.pageSize)
-            }
-            type="button"
-            className="btn btn-dark next"
-            onClick={this.handleNextClick}
-          >
-            Next
-          </button>
-        </div>
+  return (
+    <div className="container my-3" style={{ paddingTop: "70px" }}>
+      <h1 className="text-center">
+        NewsByReact - Top Headlines on {capitalizeFirstLetter(category)}
+      </h1>
+      {loading && <Spinner />}
+      <div className="row">
+        {!loading &&
+          articles.map((element, index) => (
+            <div className="col-md-4" key={index}>
+              <NewsItem
+                title={element.title ? element.title.slice(0, 45) : ""}
+                description={
+                  element.description ? element.description.slice(0, 88) : ""
+                }
+                imageUrl={
+                  element.urlToImage ||
+                  "https://www.hindustantimes.com/static-content/1y/ht/ht-logo.png"
+                }
+                newsUrl={element.url}
+              />
+            </div>
+          ))}
       </div>
-    );
-  }
-}
+      <div className="container d-flex justify-content-between">
+        <button
+          disabled={page <= 1}
+          type="button"
+          className="btn btn-dark"
+          onClick={handlePrevClick}
+        >
+          Previous
+        </button>
+        <button
+          disabled={page + 1 > Math.ceil(totalResults / pageSize)}
+          type="button"
+          className="btn btn-dark"
+          onClick={handleNextClick}
+        >
+          Next
+        </button>
+      </div>
+    </div>
+  );
+};
+
+News.propTypes = {
+  country: PropTypes.string,
+  pageSize: PropTypes.number,
+  category: PropTypes.string,
+  apiKey: PropTypes.string.isRequired,
+};
 
 export default News;
