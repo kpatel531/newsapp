@@ -8,7 +8,7 @@ const News = ({
   country = "us",
   pageSize = 18,
   category = "general",
-  apiKey,
+  domain,
 }) => {
   const [articles, setArticles] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -19,13 +19,11 @@ const News = ({
     string.charAt(0).toUpperCase() + string.slice(1);
 
   const updateNews = async () => {
-    const url = `https://newsapi.org/v2/top-headlines?category=${category}&country=${country}&apiKey=${apiKey}&page=${page}&pageSize=${pageSize}`;
+    const url = `${domain}/api/news?category=${category}&country=${country}&page=${page}&pageSize=${pageSize}`;
 
     try {
       setLoading(true);
-      const response = await axios.get(url, {
-        headers: { "X-Api-Key": apiKey },
-      });
+      const response = await axios.get(url);
       setArticles(response.data.articles);
       setTotalResults(response.data.totalResults);
       setLoading(false);
@@ -101,7 +99,7 @@ News.propTypes = {
   country: PropTypes.string,
   pageSize: PropTypes.number,
   category: PropTypes.string,
-  apiKey: PropTypes.string.isRequired,
+  domain: PropTypes.string.isRequired,
 };
 
 export default News;
